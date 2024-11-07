@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .status {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            height: 2rem;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 15px;
+            font-size: 2.5rem;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .cell.x {
+            color: #FF4B4B;
+        }
+
+        .cell.o {
+            color: #4BFFB3;
+        }
+
+        #resetBtn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            background: linear-gradient(45deg, #FF4B4B, #FF7B4B);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #resetBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 400px) {
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .status {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tic Tac Toe</h1>
+        <div class="status" id="status">Player X's Turn</div>
+        <div class="board" id="board">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+        <button id="resetBtn">Reset Game</button>
+    </div>
+
+    <script>
+        class TicTacToe {
+            constructor() {
+                this.board = Array(9).fill('');
+                this.currentPlayer = 'X';
+                this.gameActive = true;
+
+                this.statusElement = document.getElementById('status');
+                this.cells = document.querySelectorAll('.cell');
+                this.resetBtn = document.getElementById('resetBtn');
+
+                this.initializeGame();
+            }
+
+            initializeGame() {
+                this.cells.forEach(cell => {
+                    cell.addEventListener('click', () => this.handleCellClick(cell));
+                });
+                this.resetBtn.addEventListener('click', () => this.resetGame());
+            }
+
+            handleCellClick(cell) {
+                const index = cell.getAttribute('data-index');
+
+                if (this.board[index] === '' && this.gameActive) {
+                    this.board[index] = this.currentPlayer;
+                    cell.textContent = this.currentPlayer;
+                    cell.classList.add(this.currentPlayer.toLowerCase());
+
+                    if (this.checkWin()) {
+                        this.statusElement.textContent = `Player ${this.currentPlayer} Wins!`;
+                        this.gameActive = false;
+                        return;
+                    }
+
+                    if (this.checkDraw()) {
+                        this.statusElement.textContent = "It's a Draw!";
+                        this.gameActive = false;
+                        return;
+                    }
+
+                    this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
+                    this.statusElement.textContent = `Player ${this.currentPlayer}'s Turn`;
+                }
+            }
+
+            checkWin() {
+                const winPatterns = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                    [0, 4, 8], [2, 4, 6] // Diagonals
+                ];
+
+                return winPatterns.some(pattern => {
+                    const [a, b, c] = pattern;
+                    return this.board[a] &&
+                           this.board[a] === this.board[b] &&
+                           this.board[a] === this.board[c];
+                });
+            }
+
+            checkDraw() {
+                return !this.board.includes('');
+            }
+
+            resetGame() {
+                this.board = Array(9).fill('');
+                this.currentPlayer = 'X';
+                this.gameActive = true;
+                this.statusElement.textContent = `Player ${this.currentPlayer}'s Turn`;
+                
+                this.cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.classList.remove('x', 'o');
+                });
+            }
+        }
+
+        // Start the game
+        new TicTacToe();
+    </script>
+</body>
+</html>
